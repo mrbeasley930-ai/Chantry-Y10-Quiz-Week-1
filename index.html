@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Year 10 Form Quiz Leaderboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#12103a;--bg2:#1d1a52;--ink:#15132e;--gold:#ffc83d;--silver:#cfd6e4;--bronze:#e0995e;--good:#1fbf75;--bad:#e8455a;--line:rgba(255,255,255,.1);--y12:#4f8cff;--y13:#ff7a59}
+*{box-sizing:border-box}
+body{margin:0;font-family:Outfit,system-ui,-apple-system,Segoe UI,sans-serif;background:radial-gradient(circle at 80% 0%,var(--bg2),var(--bg) 60%);color:#fff;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+.wrap{max-width:1100px;margin:0 auto;padding:24px 16px 40px}
+header{text-align:center;margin-bottom:18px}
+header h1{margin:0;font-size:clamp(30px,5vw,52px);line-height:1.05}
+header p{margin:6px 0 0;opacity:.75;font-size:17px}
+.prize{display:inline-block;margin-top:14px;background:rgba(255,200,61,.14);border:1px solid rgba(255,200,61,.4);color:var(--gold);border-radius:999px;padding:8px 16px;font-weight:600}
+.tabs{display:flex;gap:8px;justify-content:center;margin:18px 0 10px;flex-wrap:wrap}
+.tabs button{border:1px solid var(--line);background:rgba(255,255,255,.07);color:#fff;border-radius:999px;padding:10px 22px;font-size:17px;font-weight:600}
+.tabs button.on{background:#fff;color:var(--ink);border-color:#fff}
+.board{display:none}.board.on{display:block}
+.podium{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:14px;align-items:end;margin:22px auto 26px;max-width:760px}
+.step{border-radius:16px 16px 6px 6px;text-align:center;padding:16px 10px}
+.step .medal{font-size:34px}
+.step .f{font-size:clamp(22px,3.6vw,34px);font-weight:800}
+.step .p{font-size:17px;opacity:.85}
+.s1{background:linear-gradient(180deg,rgba(255,200,61,.35),rgba(255,200,61,.08));min-height:200px;border:2px solid var(--gold)}
+.s2{background:linear-gradient(180deg,rgba(207,214,228,.3),rgba(207,214,228,.06));min-height:165px;border:2px solid var(--silver)}
+.s3{background:linear-gradient(180deg,rgba(224,153,94,.3),rgba(224,153,94,.06));min-height:140px;border:2px solid var(--bronze)}
+.tablewrap{overflow-x:auto;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:16px}
+table{border-collapse:collapse;width:100%;min-width:520px}
+th,td{padding:12px 14px;text-align:center;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:13px;text-transform:uppercase;letter-spacing:.6px;opacity:.7;font-weight:600}
+td.form{text-align:left;font-weight:800;font-size:19px}
+td.rank{font-weight:800;font-size:19px;width:60px}
+td.total{font-weight:800;font-size:22px;color:var(--gold)}
+td.wk{opacity:.9}
+td.wk.none{opacity:.3}
+tr:last-child td{border-bottom:0}
+tr.top1 td.rank{color:var(--gold)} tr.top2 td.rank{color:var(--silver)} tr.top3 td.rank{color:var(--bronze)}
+.mv{font-size:13px;margin-left:6px}
+.up{color:var(--good)} .down{color:var(--bad)}
+.best{outline:2px solid rgba(255,200,61,.6);border-radius:8px}
+.yr{display:inline-block;font-size:11px;font-weight:600;letter-spacing:.5px;padding:2px 7px;border-radius:6px;margin-left:8px;vertical-align:middle;color:var(--ink)}
+.yr.y12{background:var(--y12);color:#fff}.yr.y13{background:var(--y13);color:#fff}
+.meta{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:14px;font-size:14px;opacity:.65}
+.empty{text-align:center;padding:30px 10px;font-size:18px;opacity:.85}
+.err{background:rgba(232,69,90,.2);color:#ffb3bd;border-radius:12px;padding:12px 16px;margin-bottom:14px;text-align:center}
+.rules{margin-top:26px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:16px;padding:16px 20px;font-size:15px;line-height:1.5;opacity:.9}
+.rules h2{margin:0 0 6px;font-size:18px}
+.rules ul{margin:0;padding-left:20px}
+@media (max-width:560px){.podium{gap:8px}.step .medal{font-size:26px}.tabs button{padding:8px 14px;font-size:15px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Year 10 Form Quiz League</h1>
+    <p id="termLine">Autumn Term 2026</p>
+  </header>
+
+  <div id="err" class="err" hidden></div>
+
+  <div class="board on" id="b-all"><div class="podium"></div><div class="tablewrap"><table><thead></thead><tbody></tbody></table></div></div>
+
+  <div class="meta"><span id="updated">Loading scores…</span><span>Updates automatically every minute</span></div>
+
+  <div class="rules">
+    <h2>How it works</h2>
+    <ul>
+      <li>One quiz a week in form time: 30 questions. Twenty are on GCSE subjects, five on sport and five on pop culture.</li>
+      <li>Your form answers each question together, with 30 seconds to decide. 1 point per correct answer.</li>
+      <li>Weekly scores add up over the term. The highlighted score in each column is that week's top score.</li>
+      <li>Missed a quiz? That week counts as 0, so make sure your form plays every week.</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+const CLOUD = { endpoint:"https://vestigia-store.mrbeasley930.workers.dev", book:"y10fq27" };
+const TERM  = { id:"autumn26", name:"Autumn Term 2026" };
+const FORMS = ["Cotswold","Bredon","Woodbury","Kinver","Malvern","Ankerdine"];
+const BOARDS = { all:{ forms:FORMS, tag:false } };
+const $ = s => document.querySelector(s);
+$("#termLine").textContent = TERM.name;
+
+
+async function pull(f){
+  const r = await fetch(CLOUD.endpoint+"?key="+encodeURIComponent(CLOUD.book+"::"+f+"::FORM"), {cache:"no-store"});
+  if(!r.ok) throw new Error("HTTP "+r.status);
+  const j = await r.json(); return j && j.data ? j.data : null;
+}
+const yrTag = f => '';
+
+function render(id, recsByForm){
+  const B = BOARDS[id], root = $("#b-"+id);
+  const podium = root.querySelector(".podium"), thead = root.querySelector("thead"), tbody = root.querySelector("tbody");
+  const label = f => f + (B.tag ? yrTag(f) : "");
+
+  const weekNums = new Set();
+  const rows = B.forms.map(f=>{
+    const wk = {};
+    const weeks = (recsByForm[f] && recsByForm[f].weeks) || {};
+    Object.values(weeks).forEach(w=>{ if(w.term===TERM.id){ wk[w.week]=w.score; weekNums.add(w.week);} });
+    return { form:f, wk };
+  });
+  const weeks = [...weekNums].sort((a,b)=>a-b);
+  const lastWeek = weeks[weeks.length-1];
+  rows.forEach(r=>{
+    r.total = weeks.reduce((s,w)=>s+(r.wk[w]||0),0);
+    r.prevTotal = weeks.filter(w=>w!==lastWeek).reduce((s,w)=>s+(r.wk[w]||0),0);
+  });
+  const rankBy = key => { const s=[...rows].sort((a,b)=>b[key]-a[key]); const out={};
+    s.forEach((r,i)=>{ out[r.form] = (i>0 && r[key]===s[i-1][key]) ? out[s[i-1].form] : i+1; }); return out; };
+  const rank = rankBy("total"), prev = weeks.length>1 ? rankBy("prevTotal") : null;
+  rows.sort((a,b)=> b.total-a.total || a.form.localeCompare(b.form));
+  const weekBest = {}; weeks.forEach(w=>{ weekBest[w] = Math.max(...rows.map(r=>r.wk[w]??-1)); });
+  const tied = f => rows.filter(r=>rank[r.form]===rank[f]).length>1;
+
+  if(!weeks.length){
+    podium.innerHTML="";
+    thead.innerHTML="<tr><th style='text-align:left'>Form</th><th>Total</th></tr>";
+    tbody.innerHTML='<tr><td colspan="2" class="empty" style="white-space:normal">No quizzes played yet this term. Scores appear here as soon as the first form finishes.</td></tr>'+
+      B.forms.map(f=>'<tr><td class="form">'+label(f)+'</td><td class="total">0</td></tr>').join("");
+    return;
+  }
+  const top = rows.slice(0,3), medal=["🥇","🥈","🥉"], cls=["s1","s2","s3"], pos=[1,0,2];
+  podium.innerHTML = pos.map(p=>{ const r=top[p]; if(!r) return "<div></div>";
+    return '<div class="step '+cls[p]+'"><div class="medal">'+medal[p]+'</div><div class="f">'+label(r.form)+'</div><div class="p">'+r.total+' pts</div></div>'; }).join("");
+  thead.innerHTML = "<tr><th>#</th><th style='text-align:left'>Form</th>"+weeks.map(w=>"<th>Wk "+w+"</th>").join("")+"<th>Total</th></tr>";
+  tbody.innerHTML = rows.map(r=>{
+    const rk = rank[r.form];
+    let mv = "";
+    if(prev){ const d = prev[r.form]-rk; if(d>0) mv='<span class="mv up">▲'+d+'</span>'; else if(d<0) mv='<span class="mv down">▼'+(-d)+'</span>'; }
+    return '<tr class="'+(rk<=3?'top'+rk:'')+'"><td class="rank">'+(tied(r.form)?'=':'')+rk+'</td><td class="form">'+label(r.form)+mv+'</td>'+
+      weeks.map(w=>{ const v=r.wk[w]; if(v==null) return '<td class="wk none">–</td>';
+        return '<td class="wk"><span class="'+(v===weekBest[w]?'best':'')+'" style="padding:2px 6px">'+v+'</span></td>'; }).join("")+
+      '<td class="total">'+r.total+'</td></tr>';
+  }).join("");
+}
+
+async function load(){
+  let recs;
+  try{ recs = await Promise.all(FORMS.map(pull)); $("#err").hidden = true; }
+  catch(e){ $("#err").hidden=false; $("#err").textContent="Can't reach the scores right now. Check your connection; the page will try again in a minute."; return; }
+  const byForm = {}; FORMS.forEach((f,i)=>byForm[f]=recs[i]);
+  Object.keys(BOARDS).forEach(id=>render(id, byForm));
+  $("#updated").textContent = "Last checked "+new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+}
+load(); setInterval(load, 60000);
+</script>
+</body>
+</html>
